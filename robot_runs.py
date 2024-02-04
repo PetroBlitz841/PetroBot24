@@ -34,7 +34,7 @@ class Gearbox:
         self.shifter.run_target(self.shift_speed, self.gear_distance * gear)
 
 hub = PrimeHub()
-hub.imu.reset_heading()
+hub.imu.reset_heading(0)
 
 changeM = Motor(Port.A) #blue
 outputM = Motor(Port.C) #purple
@@ -43,22 +43,25 @@ gear_box = Gearbox(changeM, outputM)
 left_wheel = Motor(Port.B) #green
 right_wheel = Motor(Port.E, positive_direction=Direction.COUNTERCLOCKWISE) #aqua
 wheels = DriveBase(left_wheel, right_wheel, 62, 129)
-wheels.use_gyro(True)
+# wheels.use_gyro(True)
 
 right_sensor = ColorSensor(Port.F) #yellow
 left_sensor = ColorSensor(Port.D) #red
 
-wheels.settings(straight_speed=200)
-wheels.straight(30000)
+# wheels.settings(straight_speed=200)
+# wheels.straight(30000)
 
-# gear_box.reset()
-# gear_box.shift_to(4)
-# gear_box.shift_to(2)
-# gear_box.reset()
-# gear_box.shift_to(3)
-# gear_box.output.dc(-80)
-# wait(10000)
-# gear_box.output.stop()
+gear_box.reset()
+gear_box.output.run_time(730, 5000)
+gear_box.shift_to(4)
+gear_box.output.run_time(730, 5000)
+gear_box.shift_to(2)
+gear_box.output.run_time(730, 5000)
+gear_box.reset()
+gear_box.output.run_time(730, 5000)
+gear_box.shift_to(3)
+gear_box.output.run_time(730, 5000)
+
 # right_wheel.run_time(500, 1000)
 # left_wheel.run_time(500, 1000)
 # wheels.drive(500, 0)
