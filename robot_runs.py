@@ -13,11 +13,11 @@ class Gearbox:
         self.gear_distance = gear_distance
 
         self.shift_speed = 720
-        self.stall_threshold = 110
+        self.stall_threshold = 75
 
     def reset(self):
         self.shifter.dc(-90)
-        while self.shifter.load() < self.stall_threshold:
+        while self.shifter.load() < self.stall_threshold and self.shifter.angle() > 100:
             pass
         self.shifter.hold()
         self.shifter.run_angle(self.shift_speed, 540)

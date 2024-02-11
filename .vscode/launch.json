@@ -7,7 +7,7 @@
     {
       "name": "Pybricks: Current File",
       "preLaunchTask": "usevenv",
-      "type": "debugpy",
+      "type": "python",
       "request": "launch",
       "program": "pybrickslaunch.py",
       "env": { "TARGET": "${relativeFile}" }
