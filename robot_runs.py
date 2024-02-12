@@ -51,9 +51,13 @@ left_sensor = ColorSensor(Port.C) #red
 #================================RUNS==================================
 
 def run_4():
-    wheels.settings(straight_speed=300)
-    wheels.straight(-850)
+    wheels.settings(straight_speed=500)
+    wheels.straight(-800)
+    right_wheel.run_time(-500,1000)
+    wheels.settings(straight_speed=700)
+
     wheels.straight(1050)
+   
 
 
 run_4()
