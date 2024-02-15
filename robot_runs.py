@@ -72,7 +72,9 @@ def run_4():
 # gear_box.reset()
 # gear_box.shift_to(4)
 gear_box.output.run_angle(360, 1000)
+
 gear_box.output.run_time(-500, 7000)
+
 
 
 # wheels.settings(straight_speed=200)
@@ -95,4 +97,6 @@ gear_box.output.run_time(-500, 7000)
 # wait(1000)
 # print(right_sensor.reflection())
 # print(left_sensor.reflection())
+#######
+
 
