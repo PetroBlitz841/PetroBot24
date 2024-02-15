@@ -50,24 +50,29 @@ left_sensor = ColorSensor(Port.C) #red
 
 #================================RUNS==================================
 
-def run_4():
-    wheels.settings(straight_speed=300)
-    wheels.straight(-850)
-    wheels.straight(1050)
+#def run_4():
+    #wheels.settings(straight_speed=300)
+    #wheels.straight(-850)
+    #wheels.straight(1050)
 
 
-run_4()
+#run_4()
 #================================TESTS=================================
 
 # gear_box.reset()
 # while Button.LEFT not in hub.buttons.pressed():
-#     gear = hub_menu("1", "2", "3", "4") if hub != 3 else 2.5
-#     gear_box.shift_to(int(gear))
-#     gear_box.output.dc(100)
-#     while Button.RIGHT not in hub.buttons.pressed():
-#         pass
-#     gear_box.output.hold()
-#     gear_box.reset()
+#      gear = hub_menu("1", "2", "3", "4") if hub != 3 else 2.5
+#      gear_box.shift_to(int(gear))
+#      gear_box.output.dc(100)
+#      while Button.RIGHT not in hub.buttons.pressed():
+#          pass
+#      gear_box.output.hold()
+#      gear_box.reset()
+
+# gear_box.reset()
+# gear_box.shift_to(4)
+gear_box.output.run_angle(360, 1000)
+gear_box.output.run_time(-500, 7000)
 
 
 # wheels.settings(straight_speed=200)
