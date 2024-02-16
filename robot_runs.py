@@ -43,17 +43,29 @@ changeM = Motor(Port.B) #blue
 outputM = Motor(Port.D) #purple
 gear_box = Gearbox(changeM, outputM)
 
-left_wheel = Motor(Port.E) #green
-right_wheel = Motor(Port.F, positive_direction=Direction.COUNTERCLOCKWISE) #aqua
+left_wheel = Motor(Port.E, positive_direction=Direction.COUNTERCLOCKWISE) #green
+right_wheel = Motor(Port.F) #aqua
 wheels = DriveBase(left_wheel, right_wheel, 62, 129)
-# wheels.use_gyro(True)
+wheels.use_gyro(True)
 
 right_sensor = ColorSensor(Port.A) #yellow
 left_sensor = ColorSensor(Port.C) #red
 
 
+############# functions ##############
+def untill_black(speed, sensor, brake = True):
+    wheels.drive(speed, 0)
+    while sensor.reflection() > 15:
+        print(sensor.reflection())
+    if brake:
+        wheels.stop()
 
+def follow_line(speed, distance, sensor, side, kp, brake):
+    left_wheel.reset()
+    while left_wheel.angle() < distance:
+        pass
 
+############ runs #####################
 def run1(): 
     gear_box.reset()
     gear_box.output.run_time(730, 5000)
@@ -81,7 +93,12 @@ def run4():
      gear_box.output.run_angle(-500,7000)
 
 def run5(): 
-     gear_box.output.run_time(730, 5000)
+    gear_box.reset()
+    untill_black(400, left_sensor, False)
+    wheels.straight(85)
+    wheels.settings(turn_rate=200)
+    wheels.turn(-45)
+
 
 def run9(): 
      gear_box.output.run_time(730, 5000)
@@ -99,18 +116,19 @@ def run9():
 # wait(1000)
 # print(right_sensor.reflection())
 # print(left_sensor.reflection())
+while True:
+    print(left_sensor.reflection())
+# selected= hub_menu("1","2","3","4","5","9")
 
-selected= hub_menu("1","2","3","4","5","9")
-
-if selected == "1": 
-    run1()
-elif selected == "2":
-    run2()
-elif selected == "3":
-    run3()
-elif selected == "4":
-    run4()
-elif selected == "5":
-    run5()
-elif selected == "9":
-    run9()
+# if selected == "1": 
+#     run1()
+# elif selected == "2":
+#     run2()
+# elif selected == "3":
+#     run3()
+# elif selected == "4":
+#     run4()
+# elif selected == "5":
+#     run5()
+# elif selected == "9":
+#     run9()
