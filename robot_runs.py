@@ -7,7 +7,7 @@ from pybricks.tools import hub_menu
 
 
 class Gearbox:
-    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1450):
+    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1550):
         """Creates a gear shift using 2 motors."""
         self.shifter = shifter
         self.output = output
@@ -37,33 +37,7 @@ class Gearbox:
 
     def wait_for_gear(self):
         while not self.shifter.done():
-            pass
-    
-    def run(self, speed):
-        while not self.shifter.done():
-            pass
-        self.output.run(speed)
-
-    def run_time(self, speed, time, then=Stop.HOLD, wait=True):
-        while not self.shifter.done():
-            pass
-        self.output.run_time(speed, time, then, wait)
-    
-    def run_angle(self, speed, rotation_angle, then=Stop.HOLD, wait=True):
-        while not self.shifter.done():
-            pass
-        self.output.run_angle(speed, rotation_angle, then, wait)
-    
-    def run_target(self, speed, target_angle, then=Stop.HOLD, wait=True):
-        while not self.shifter.done():
-            pass
-        self.output.run_target(speed, target_angle, then, wait)
-
-    
-
-
-
-    
+            pass   
 
 ############ techniacal stuff ############
 hub = PrimeHub()
@@ -161,8 +135,8 @@ def gyro_turn(target, speed, clockwise = True):
     target = (target + 360) % 360
     current = (hub.imu.heading()) % 360
     short_way = target - current
-    long_way = (360 - short_way) * (-1 * short_way / abs(short_way))
-    wheels.settings(turn_rate=speed)
+    long_way = (360 - abs(short_way)) * (-1 * short_way / abs(short_way))
+    wheels.settings(turn_rate=speed, turn_acceleration=30)
     if clockwise:
         wheels.turn(max(short_way, long_way))
     else:
@@ -190,17 +164,36 @@ def straight_time(speed, seconds):
 
 
 ############ runs ###############
+gear_box.reset()
+
 def run1(): 
-    gear_box.reset()
-    gear_box.output.run_time(730, 5000)
-    gear_box.shift_to(4)
-    gear_box.output.run_time(730, 5000)
-    gear_box.shift_to(2)
-    gear_box.output.run_time(730, 5000)
-    gear_box.reset()
-    gear_box.output.run_time(730, 5000)
-    gear_box.shift_to(3)
-    gear_box.output.run_time(730, 5000)
+    gear_box.shift_to(4, False)
+    wheels.settings(straight_speed=300)
+    wheels.straight(-385, then=Stop.HOLD)
+    wait(500)
+    wheels.settings(straight_speed=100)
+    wheels.straight(-70)
+    gyro_turn(40, 80)
+    wheels.straight(-70)
+    wheels.settings(straight_speed=200)
+    wheels.straight(70)
+    right_wheel.dc(75)
+    left_wheel.dc(15)
+    while right_sensor.reflection() > 18:
+        pass
+    wheels.straight(70)
+    gyro_abs(3, 40)
+    
+    follow_line_until_black(40, left_sensor, right_sensor, 'R', 0.5)
+    gear_box.wait_for_gear()
+    gear_box.output.run_angle(250, 110)
+    wheels.settings(220)
+    wheels.straight(70)
+    gear_box.output.run_angle(-350, 110)
+    wheels.straight(-70)
+
+
+    
 
 
 def run2(): 
