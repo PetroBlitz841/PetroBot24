@@ -131,17 +131,16 @@ def gyro_abs(target, speed):
     wheels.stop()
     print(hub.imu.heading())
 
-def gyro_turn(target, speed, clockwise = True):
+def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
     target = (target + 360) % 360
     current = (hub.imu.heading()) % 360
     short_way = target - current
     long_way = (360 - abs(short_way)) * (-1 * short_way / abs(short_way))
     wheels.settings(turn_rate=speed, turn_acceleration=30)
     if clockwise:
-        wheels.turn(max(short_way, long_way))
+        wheels.turn(max(short_way, long_way), then=brake)
     else:
-        wheels.turn(min(short_way, long_way))
-    wheels.stop()
+        wheels.turn(min(short_way, long_way), then=brake)
     print(hub.imu.heading())
     
 def straight_untill_black(speed, sensor):
@@ -164,7 +163,7 @@ def straight_time(speed, seconds):
 
 
 ############ runs ###############
-
+gear_box.reset()
 def run1(): 
     gear_box.shift_to(4, False)
     wheels.settings(straight_speed=300)
@@ -172,7 +171,10 @@ def run1():
     wait(500)
     wheels.settings(straight_speed=100)
     wheels.straight(-70)
-    gyro_turn(40, 80)
+    gyro_turn(50, speed=30, brake= Stop.NONE)
+
+    gyro_turn(160, speed=150, brake= Stop.HOLD)
+
     wheels.straight(-70)
     wheels.settings(straight_speed=200)
     wheels.straight(70)
@@ -181,8 +183,7 @@ def run1():
     while right_sensor.reflection() > 18:
         pass
     wheels.straight(70)
-    gyro_abs(3, 40)
-    
+    gyro_abs(95, 40)
     follow_line_until_black(40, left_sensor, right_sensor, 'R', 0.5)
     gear_box.wait_for_gear()
     gear_box.output.run_angle(250, 110)
