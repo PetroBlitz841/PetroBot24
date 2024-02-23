@@ -164,7 +164,6 @@ def straight_time(speed, seconds):
 
 
 ############ runs ###############
-gear_box.reset()
 
 def run1(): 
     gear_box.shift_to(4, False)
@@ -197,8 +196,10 @@ def run1():
 
 
 def run2(): 
-    gear_box.output.dc(-100)
-    wait(100000000)
+    gear_box.shift_to(4)
+    straight_untill_black(350,left_sensor)
+    wheels.straight(-100, wait= False)
+    gear_box.output.run_time(-1000000000, 2000)
 def run3(): 
      wheels.settings(straight_speed=500)
      wheels.straight(320, wait= True)
