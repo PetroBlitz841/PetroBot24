@@ -7,7 +7,7 @@ from pybricks.tools import hub_menu
 
 
 class Gearbox:
-    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1800):
+    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1690):
         """Creates a gear shift using 2 motors."""
         self.shifter = shifter
         self.output = output
@@ -24,6 +24,8 @@ class Gearbox:
         self.shifter.hold()
         self.shifter.run_angle(self.shift_speed, 420)
         self.shifter.reset_angle(0)
+        self.shifter.hold()
+
 
     def settings(self):
         ...
@@ -34,6 +36,7 @@ class Gearbox:
         
         gear = gear - 1 # Change to zero-based index
         self.shifter.run_target(self.shift_speed, self.gear_distance * gear, wait=wait)
+        self.shifter.hold()
 
     def wait_for_gear(self):
         while not self.shifter.done():
@@ -168,7 +171,7 @@ gear_box.reset()
 def run1(): 
     gear_box.shift_to(4, False)
     wheels.settings(straight_speed=300)
-    wheels.straight(-375, then=Stop.NONE)
+    wheels.straight(-365, then=Stop.NONE)
     wheels.settings(straight_speed=100)
     wheels.straight(-70)
     wheels.settings(turn_rate=17)
@@ -186,13 +189,14 @@ def run1():
     follow_line_until_black(40, left_sensor, right_sensor, 'L', 0.7)
     wheels.stop()
     gyro_abs(92, 40) 
-    gear_box.output.run_time(-1000, 2000)
+    gear_box.output.run_time(-3000, 4000)
     straight_time(250, 2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-    gear_box.output.run_time(700, 1500)
+    gear_box.output.run_time(3000, 4500)
     wheels.settings(200)
     wheels.straight(-100)
     wheels.curve(50, 60, then=Stop.NONE)
-    straight_time(300, 3, -1)
+    wheels.settings(2000)
+    wheels.drive(-1500, 0)
 
     # right_wheel.dc(70)
     # while hub.imu.heading() < 89.5 or hub.imu.heading() > 90.5:
@@ -204,10 +208,13 @@ def run1():
 
 
 def run2(): 
-    gear_box.shift_to(4)
+    gear_box.shift_to(4, wait=False)
     straight_untill_black(350,left_sensor)
-    wheels.straight(-100, wait= False)
-    gear_box.output.run_time(-1000000000, 2000)
+    gear_box.wait_for_gear()
+    gear_box.output.run_time(-500, 3000)
+    wheels.settings(straight_speed=1000)
+    wheels.straight(1000, wait= False)
+
 def run3(): 
      wheels.settings(straight_speed=500)
      wheels.straight(320, wait= True)
@@ -262,20 +269,24 @@ def tester():
 # wait(1000)
 # print(right_sensor.reflection())
 # print(left_sensor.reflection())
+while Button.LEFT not in hub.buttons.pressed():
 
-selected= hub_menu("1","2","3","4","5","9", "T")
+    selected= hub_menu("1","2","3","4","5","9", "T")
 
-if selected == "1": 
-    run1()
-elif selected == "2":
-    run2()
-elif selected == "3":
-    run3()
-elif selected == "4":
-    run4()
-elif selected == "5":
-    run5()
-elif selected == "9":
-    run9() 
-elif selected == "T":
-    tester()
+    if selected == "1": 
+        run1()
+    elif selected == "2":
+        run2()
+    elif selected == "3":
+        run3()
+    elif selected == "4":
+        run4()
+    elif selected == "5":
+        run5()
+    elif selected == "9":
+        run9() 
+    elif selected == "T":
+        tester()
+    while Button.RIGHT not in hub.buttons.pressed():
+            pass
+    wheels.stop()
