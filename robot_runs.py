@@ -7,7 +7,7 @@ from pybricks.tools import hub_menu
 
 
 class Gearbox:
-    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1440):
+    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1380):
         """Creates a gear shift using 2 motors."""
         self.shifter = shifter
         self.output = output
@@ -164,33 +164,39 @@ def straight_time(speed, seconds):
 
 ############ runs ###############
 gear_box.reset()
+
 def run1(): 
     gear_box.shift_to(4, False)
     wheels.settings(straight_speed=300)
-    wheels.straight(-385, then=Stop.HOLD)
-    wait(500)
+    wheels.straight(-365, then=Stop.NONE)
     wheels.settings(straight_speed=100)
     wheels.straight(-70)
-    gyro_turn(50, speed=30, brake= Stop.NONE)
-
-    gyro_turn(160, speed=150, brake= Stop.HOLD)
-
+    wheels.settings(turn_rate=17)
+    wheels.turn(30, then= Stop.NONE)
+    gyro_turn(160, speed=500, brake= Stop.HOLD)
     wheels.straight(-70)
     wheels.settings(straight_speed=200)
     wheels.straight(70)
     right_wheel.dc(75)
     left_wheel.dc(15)
-    while right_sensor.reflection() > 18:
+    while right_sensor.reflection() < 95:
         pass
-    wheels.straight(70)
-    gyro_abs(95, 40)
-    follow_line_until_black(40, left_sensor, right_sensor, 'R', 0.5)
-    gear_box.wait_for_gear()
-    gear_box.output.run_angle(250, 110)
-    wheels.settings(220)
-    wheels.straight(70)
-    gear_box.output.run_angle(-350, 110)
-    wheels.straight(-70)
+    wheels.straight(30)
+    gear_box.output.run_time(-1000, 1500, wait=False)
+    gyro_abs(140, 40)
+    follow_line_until_black(40, left_sensor, right_sensor, 'L', 0.7)
+    wheels.stop()
+    gyro_abs(92, 40) 
+    straight_time(250, 1.5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    gear_box.output.run_time(1000, 1800)
+    wheels.settings(200)
+    wheels.straight(-100)
+    gear_box.output.run_angle(1000, 360, wait=False)
+    wheels.curve(50, 50, then=Stop.NONE)
+    wheels.settings(1000)
+    wheels.straight(-1500)
+    
+
 
 
     
@@ -255,20 +261,20 @@ def tester():
 # wait(1000)
 # print(right_sensor.reflection())
 # print(left_sensor.reflection())
+while True:
+    selected= hub_menu("1","2","3","4","5","9", "T")
 
-selected= hub_menu("1","2","3","4","5","9", "T")
-
-if selected == "1": 
-    run1()
-elif selected == "2":
-    run2()
-elif selected == "3":
-    run3()
-elif selected == "4":
-    run4()
-elif selected == "5":
-    run5()
-elif selected == "9":
-    run9() 
-elif selected == "T":
-    tester()
+    if selected == "1": 
+        run1()
+    elif selected == "2":
+        run2()
+    elif selected == "3":
+        run3()
+    elif selected == "4":
+        run4()
+    elif selected == "5":
+        run5()
+    elif selected == "9":
+        run9() 
+    elif selected == "T":
+        tester()
