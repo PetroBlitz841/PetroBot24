@@ -204,9 +204,13 @@ def run1():
 
 
 def run2(): 
-    straight_untill_black(250,left_sensor, False)
+    wheels.settings(straight_speed=400)
+    wheels.straight(650, wait= True)
+    straight_untill_black(170,left_sensor, False)
     gear_box.shift_to(2)
+    gear_box.wait_for_gear()
     gear_box.output.run_time(-1000000000, 2000)
+    wait(500)
     gear_box.output.run_time(1000000000, 2000)
 def run3(): 
      wheels.settings(straight_speed=500)
