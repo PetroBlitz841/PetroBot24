@@ -143,9 +143,10 @@ def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
         wheels.turn(min(short_way, long_way), then=brake)
     print(hub.imu.heading())
     
-def straight_untill_black(speed, sensor):
+
+def straight_untill_black(speed, sensor, wait1):
     wheels.settings(straight_speed=speed)
-    wheels.straight(1000, wait=False)
+    wheels.straight(1000, wait=wait1)
     while sensor.reflection() > 20:
         pass
     wheels.stop()
@@ -203,10 +204,10 @@ def run1():
 
 
 def run2(): 
-    gear_box.shift_to(4)
-    straight_untill_black(350,left_sensor)
-    wheels.straight(-100, wait= False)
+    straight_untill_black(250,left_sensor, False)
+    gear_box.shift_to(2)
     gear_box.output.run_time(-1000000000, 2000)
+    gear_box.output.run_time(1000000000, 2000)
 def run3(): 
      wheels.settings(straight_speed=500)
      wheels.straight(320, wait= True)
@@ -240,7 +241,7 @@ def tester():
     while Button.LEFT not in hub.buttons.pressed():
         gear = hub_menu("1", "2", "3", "4") if hub != 3 else 2.5
         gear_box.shift_to(int(gear))
-        gear_box.output.dc(100)
+        gear_box.output.dc(-100)
         while Button.RIGHT not in hub.buttons.pressed():
             pass
         gear_box.output.hold()
