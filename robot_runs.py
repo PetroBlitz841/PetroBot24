@@ -218,10 +218,13 @@ def run2():
     wheels.straight(1100)
 def run3(): 
      wheels.settings(straight_speed=500)
-     wheels.straight(320, wait= True)
-     gear_box.output.run_time(-10000000, 2500)
+     wheels.straight(320, wait= False)
+     gear_box.shift_to(4)
+     gear_box.output.run_time(-10000000, 3000)
      wheels.straight(200)
-     gear_box.output.run_time(5000, 2000)
+     wheels.straight(-15)
+     wheels.settings(straight_speed=1000 )
+     gear_box.output.run_time(5000, 5000)
      wheels.straight(-550)
 
 
