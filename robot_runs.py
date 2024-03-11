@@ -172,7 +172,7 @@ def run1():
     wheels.straight(-365, then=Stop.NONE)
     wheels.settings(straight_speed=100)
     wheels.straight(-70)
-    wheels.settings(turn_rate=17)
+    wheels.settings(turn_rate=35)
     wheels.turn(30, then= Stop.NONE)
     gyro_turn(160, speed=500, brake= Stop.HOLD)
     wheels.straight(-70)
@@ -183,7 +183,7 @@ def run1():
     while right_sensor.reflection() < 95:
         pass
     wheels.straight(30)
-    gear_box.output.run_time(-1000, 1500, wait=False)
+    gear_box.output.run_time(-1000, 1900, wait=False)
     gyro_abs(140, 40)
     follow_line_until_black(40, left_sensor, right_sensor, 'L', 0.7)
     wheels.stop()
@@ -193,10 +193,9 @@ def run1():
     wheels.settings(200)
     wheels.straight(-100)
     gear_box.output.run_angle(1000, 360, wait=False)
-    wheels.curve(50, 50, then=Stop.NONE)
-    wheels.settings(1000)
-    wheels.straight(-1500)
-    
+    wheels.curve(60, 50, then=Stop.NONE)
+    wheels.settings(straight_speed=700)
+    wheels.straight(-1000)    
 
 
 
