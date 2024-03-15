@@ -161,12 +161,22 @@ def straight_time(speed, seconds):
 
 ############ fun functions ######
     
-
+def smile():
+    hub.display.icon(
+        [
+            [0, 100, 0, 100, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [100, 0, 0, 0, 100],
+            [0, 100, 100, 100, 0]
+        ]
+    )
 
 ############ runs ###############
 gear_box.reset()
 
 def run1(): 
+    smile()
     gear_box.shift_to(4, False)
     wheels.settings(straight_speed=300)
     wheels.straight(-365, then=Stop.NONE)
@@ -195,10 +205,14 @@ def run1():
     gear_box.output.run_angle(1000, 360, wait=False)
     wheels.curve(60, 50, then=Stop.NONE)
     wheels.settings(straight_speed=700)
-    wheels.straight(-1000)     
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+        wheels.straight(-1000, wait=False)
+    gear_box.shift_to(2, wait=False)
+    wheels.stop()     
 
 
 def run2(): 
+    smile()
     wheels.settings(straight_speed=400)
     wheels.straight(650, wait= False)
     gear_box.shift_to(2)
@@ -211,31 +225,43 @@ def run2():
     wheels.turn(10)
     wheels.settings(straight_speed=400)
     wheels.straight(1100)
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+        wheels.straight(1100, wait=False)
+    gear_box.shift_to(4, wait=False)
+    wheels.stop()  
 
-def run3(): 
-     wheels.settings(straight_speed=500)
-     wheels.straight(320, wait= False)
-     gear_box.shift_to(4)
-     gear_box.output.run_time(-10000000, 2500)
-     wheels.straight(320, wait= False)
-     gear_box.shift_to(4)
-     gear_box.output.run_time(-10000000, 3000)
-     wheels.straight(200)
-     gear_box.output.run_time(5000, 3000)
-     wheels.straight(-15)
-     wheels.settings(straight_speed=1000 )
-     gear_box.output.run_time(5000, 5000)
-     wheels.straight(-550)
+def run3():
+    smile()
+    wheels.settings(straight_speed=500)
+    wheels.straight(320, wait= False)
+    gear_box.shift_to(4)
+    gear_box.output.run_time(-10000000, 2500)
+    wheels.straight(320, wait= False)
+    gear_box.shift_to(4)
+    gear_box.output.run_time(-10000000, 3000)
+    wheels.straight(200)
+    gear_box.output.run_time(5000, 3000)
+    wheels.straight(-15)
+    wheels.settings(straight_speed=1000 )
+    gear_box.output.run_time(5000, 5000)
+    wheels.straight(-550)
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+        wheels.straight(-550, wait=False)
+    gear_box.shift_to(1, wait=False)
+    wheels.stop()
 
 
 def run4(): 
-     wheels.settings(straight_speed=300)
-     wheels.straight(-850)
-     wheels.straight(1050)
-     gear_box.output.run_angle(360,1000)
-     gear_box.output.run_angle(-500,7000)
+    smile()
+    wheels.settings(straight_speed=300)
+    wheels.straight(-850)
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+        wheels.straight(1050, wait=False)
+    wheels.stop()
+
 
 def run5(): 
+    smile()
     gear_box.reset()
     until_black(400, left_sensor, False)
     wheels.straight(85)
