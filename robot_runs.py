@@ -9,35 +9,35 @@ from pybricks.tools import hub_menu
 class Gearbox:
     def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1380):
         """Creates a gear shift using 2 motors."""
-        self.shifter = shifter
-        self.output = output
-        self.gears = gears
-        self.gear_distance = gear_distance
+        self.shifter = shifter # the shifting motor
+        self.output = output # the motor who power the gearbox
+        self.gears = gears # the amount of gears in the gearbox
+        self.gear_distance = gear_distance # the distance between one gear
 
-        self.shift_speed = 720 
-        self.stall_threshold = 110
+        self.shift_speed = 720 # shifting speed
+        self.stall_threshold = 110 # the load the motor feels at the edge of the gearbox
 
     def reset(self):
-        self.shifter.dc(-90)
+        self.shifter.dc(-90) # moving the shift gear towards the edge of the gearbox
         while self.shifter.load() < self.stall_threshold or self.shifter.angle() > 100:
+            # checking by the load if we got to the edge of the gearbox
+            # and checking if the motor angle counting says we close to the edge
             pass
         self.shifter.hold()
-        self.shifter.run_angle(self.shift_speed, 400)
-        self.shifter.reset_angle(0)
-
-    def settings(self):
-        ...
+        self.shifter.run_angle(self.shift_speed, 400) # fixing the gap created by pushing the edge
+        self.shifter.reset_angle(0) 
 
     def shift_to(self, gear: int, wait=True):
-        if gear not in range(1, self.gears + 1):
+        if gear not in range(1, self.gears + 1): # checking if the gear number is valid
             raise ValueError("Invalid gear number")
         
         gear = gear - 1 # Change to zero-based index
-        self.shifter.run_target(self.shift_speed, self.gear_distance * gear, wait=wait)
+        self.shifter.run_target(self.shift_speed, self.gear_distance * gear, wait=wait) 
+        
 
-    def wait_for_gear(self):
-        while not self.shifter.done():
-            pass   
+    def wait_for_shift(self):
+        while not self.shifter.done(): 
+            pass 
 
 ############ techniacal stuff ############
 hub = PrimeHub()
@@ -69,32 +69,32 @@ timer = StopWatch()
 def deg_to_mm(degrees):
     return (degrees / 360) * WHEEL_PRIMETER
 
-def until_black(speed, sensor, brake = True):
+def until_black(speed, sensor: ColorSensor, brake = True):
     wheels.drive(speed, 0)
     while sensor.reflection() > 25:
         print(sensor.reflection())
     if brake:
         wheels.stop()
 
-def until_white(speed, sensor, brake = True):
+def until_white(speed, sensor: ColorSensor, brake = True):
     wheels.drive(speed, 0)
     while sensor.reflection() < 85:
         print(sensor.reflection())
     if brake:
         wheels.stop()
 
-def follow_line(speed, distance, sensor, side, kp, brake = True):
-    if side == "R":
+def follow_line(speed, distance, sensor: ColorSensor, side, kp):
+    if side == "R": 
         direction = 1
-    else:
-        direction = -1
-    left_wheel.reset_angle()
-    while deg_to_mm(left_wheel.angle()) < distance:
-        change = (TARGET - sensor.reflection()) * kp * direction
+    else: 
+        direction = -1 # changing which wheel will add or subtruct the change
+    left_wheel.reset_angle() # reseting wheel angle for counting the distance we crossed
+    while deg_to_mm(left_wheel.angle()) < distance: # converting the angle of the wheel to mm and checking if we crossed the distance
+        change = (TARGET - sensor.reflection()) * kp * direction # calculating the change needed to add or subtruct from the wheels
         left_wheel.dc(speed + change)
         right_wheel.dc(speed - change)
 
-def follow_line_until_black(speed, detect_sensor, follow_sensor, side, kp, brake = True):
+def follow_line_until_black(speed, detect_sensor: ColorSensor, follow_sensor: ColorSensor, side, kp, brake = True):
     if side == "R":
         direction = 1
     else:
@@ -106,7 +106,7 @@ def follow_line_until_black(speed, detect_sensor, follow_sensor, side, kp, brake
     if brake:
         wheels.stop()
 
-def follow_line_time(speed, seconds, sensor, side, kp, brake):
+def follow_line_time(speed, seconds, sensor: ColorSensor, side, kp, brake):
     if side == "R":
         direction = 1
     else:
@@ -120,16 +120,15 @@ def follow_line_time(speed, seconds, sensor, side, kp, brake):
         wheels.stop()
 
 def gyro_abs(target, speed):
-    while not (target > hub.imu.heading() - 0.005) or not (target < hub.imu.heading() + 0.005):
-        deg = (target - hub.imu.heading() + 360) % 360
-        if deg > 180:
+    while not (target > hub.imu.heading() - 0.005) or not (target < hub.imu.heading() + 0.005): # the stoping range
+        direction = (target - (hub.imu.heading() % 360)) % 360 # calculating the direction of the turn
+        if direction > 180:
             left_wheel.dc(-speed)
             right_wheel.dc(speed)
         else:
             left_wheel.dc(speed)
             right_wheel.dc(-speed)
     wheels.stop()
-    print(hub.imu.heading())
 
 def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
     target = (target + 360) % 360
@@ -144,10 +143,10 @@ def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
     print(hub.imu.heading())
     
 
-def straight_untill_black(speed, sensor, wait1):
+def straight_untill_black(speed, sensor: ColorSensor):
     wheels.settings(straight_speed=speed)
-    wheels.straight(1000, wait=wait1)
-    while sensor.reflection() > 20:
+    wheels.straight(1000, wait=False)
+    while sensor.reflection() > 20: # checking if the sensor see black
         pass
     wheels.stop()
   
@@ -155,7 +154,7 @@ def straight_time(speed, seconds):
     wheels.settings(straight_speed=speed)
     wheels.straight(1000, wait=False)
     timer.reset()
-    while timer.time() < seconds * 1000:
+    while timer.time() < seconds * 1000: # checking if the time passed
         pass
     wheels.stop()
 
@@ -176,7 +175,7 @@ def smile():
 gear_box.reset()
 
 def run1(): 
-    smile()
+    smile() 
     gear_box.shift_to(4, False)
     wheels.settings(straight_speed=300)
     wheels.straight(-365, then=Stop.NONE)
@@ -184,30 +183,36 @@ def run1():
     wheels.straight(-70)
     wheels.settings(turn_rate=35)
     wheels.turn(30, then= Stop.NONE)
-    gyro_turn(160, speed=500, brake= Stop.HOLD)
+    gyro_turn(160, speed=500, brake= Stop.HOLD) # turning clockwise so the attachment will be in home
+    # leaving the attachment
     wheels.straight(-70)
     wheels.settings(straight_speed=200)
     wheels.straight(70)
+    # getting to the black line
     right_wheel.dc(75)
     left_wheel.dc(15)
     while right_sensor.reflection() < 95:
         pass
     wheels.straight(30)
-    gear_box.output.run_time(-1000, 1900, wait=False)
-    gyro_abs(140, 40)
+    gear_box.output.run_time(-1000, 1900, wait=False) # moving the gripper to his possition while moving
+    gyro_abs(140, 40) # turning to the line
+    # getting to the M02
     follow_line_until_black(40, left_sensor, right_sensor, 'L', 0.7)
     wheels.stop()
     gyro_abs(92, 40) 
+    # completing M02
     straight_time(250, 1.5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-    gear_box.output.run_time(1000, 1800)
+    gear_box.output.run_time(1000, 1800) # moving the gripper to secure sam the stage manager
+    #getting home
     wheels.settings(200)
     wheels.straight(-100)
-    gear_box.output.run_angle(1000, 360, wait=False)
+    gear_box.output.run_angle(1000, 360, wait=False) # continue moving the gripper while moving
     wheels.curve(60, 50, then=Stop.NONE)
     wheels.settings(straight_speed=700)
     while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+        # allowing us finishing the run without leaving the menu so we can shift gears between runs
         wheels.straight(-1000, wait=False)
-    gear_box.shift_to(2, wait=False)
+    gear_box.shift_to(2, wait=False) # shifting to gear 2
     wheels.stop()     
 
 
@@ -216,7 +221,7 @@ def run2():
     wheels.settings(straight_speed=400)
     wheels.straight(650, wait= False)
     gear_box.shift_to(2)
-    gear_box.wait_for_gear()
+    gear_box.wait_for_shift()
     straight_untill_black(170,left_sensor, False)
     gear_box.output.run_time(-1000000000, 2000)
     wait(500)
