@@ -61,6 +61,18 @@ TARGET = 57
 
 WHEEL_DIAMETER = 62.4
 WHEEL_PRIMETER = WHEEL_DIAMETER * 3.14159265358979323846 #20 digits of pi
+COLOR_LIST = [
+    Color.WHITE,
+    Color.BLACK,
+    Color.GREEN,
+    Color.RED,
+    Color.BLUE,
+    Color.YELLOW,
+    Color.VIOLET,
+    Color(h=49, s=17, v=100),
+]
+right_sensor.detectable_colors(COLOR_LIST)
+left_sensor.detectable_colors(COLOR_LIST)
 
 
 timer = StopWatch()
@@ -69,13 +81,12 @@ timer = StopWatch()
 def deg_to_mm(degrees):
     return (degrees / 360) * WHEEL_PRIMETER
 
-def until_black(speed, sensor: ColorSensor, brake = True):
-    wheels.drive(speed, 0)
-    while sensor.reflection() > 25:
+def until_black(speed, sensor: ColorSensor):
+    wheels.settings(straight_speed=speed)
+    wheels.straight(1000, wait=False)
+    while sensor.reflection() > 20:
         print(sensor.reflection())
-    if brake:
-        wheels.stop()
-
+    wheels.brake()
 def until_white(speed, sensor: ColorSensor, brake = True):
     wheels.drive(speed, 0)
     while sensor.reflection() < 85:
@@ -148,7 +159,14 @@ def straight_untill_black(speed, sensor: ColorSensor):
     wheels.straight(1000, wait=False)
     while sensor.reflection() > 20: # checking if the sensor see black
         pass
-    wheels.stop()
+    wheels.brake()
+
+def straight_untill_white(speed, sensor: ColorSensor):
+    wheels.settings(straight_speed=speed)
+    wheels.straight(1000, wait=False)
+    while sensor.reflection() < 95: # checking if the sensor see black
+        pass
+    wheels.brake()
   
 def straight_time(speed, seconds):
     wheels.settings(straight_speed=speed)
@@ -220,7 +238,7 @@ def run2():
     smile()
     wheels.settings(straight_speed=400)
     wheels.straight(650, wait= False)
-    gear_box.shift_to(2)
+    gear_box.shift_to(2, False)
     gear_box.wait_for_shift()
     straight_untill_black(170,left_sensor, False)
     gear_box.output.run_time(-1000000000, 2000)
@@ -268,15 +286,55 @@ def run4():
 def run5(): 
     smile()
     gear_box.reset()
-    until_black(400, left_sensor, False)
-    wheels.straight(85)
-    wheels.settings(turn_rate=200)
-    wheels.turn(-45)
-    follow_line(35, 650, left_sensor, "R", 0.9)
+    hub.imu.reset_heading(0)
+    straight_untill_black(250, left_sensor)
+    follow_line(50, 780,left_sensor, "R" , 1.4)
+    # wheels.straight(50)
+    wheels.brake()
+    gyro_abs(-45  ,   45)
+
+    # gyro_turn(319, 35, clockwise = True, brake = Stop.HOLD)
+    straight_untill_white(100, right_sensor)
+    wheels.straight(65)
+    gear_box.output.run_time(650,900)
+     
+    gyro_abs(0, 45)
+    gyro_abs(-40, 45)
+    wheels.straight(-150)
+    gyro_abs(-45, 45)
+    gear_box.output.run_time(-700,900)
+    gear_box.output.run_time(700,1600)
+
+    gear_box.shift_to(2, False)
+
+    wheels.straight(200)
+    wheels.straight(1000, wait=False)
+    while not right_sensor.color() == Color(h=49, s=17, v=100):
+        pass
+    wheels.brake()
+    wheels.straight(35)
+    gyro_abs(42, 45)
+    wheels.straight(-55)
+
+    gear_box.wait_for_shift()
+    gear_box.output.run_time(-720, 5800)
+
+    gear_box.shift_to(3)
+    gear_box.output.run_time(-820, 2500)
+    straight_time(700, 1500)
+    gear_box.shift_to(4, False)
+    wheels.settings(straight_speed=250)
+    wheels.straight(-2000)
+
+
+
+
+
 
 
 def run9(): 
-     gear_box.output.run_time(730, 5000)
+     print(right_sensor.hsv())
+    #  wheels.drive(300,0)
 
 def tester():
     gear_box.reset()
