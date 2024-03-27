@@ -131,7 +131,7 @@ def follow_line_time(speed, seconds, sensor: ColorSensor, side, kp, brake):
         wheels.stop()
 
 def gyro_abs(target, speed):
-    while not (target > hub.imu.heading() - 0.005) or not (target < hub.imu.heading() + 0.005): # the stoping range
+    while not (target > hub.imu.heading() - 0.01) or not (target < hub.imu.heading() + 0.01): # the stoping range
         direction = (target - (hub.imu.heading() % 360)) % 360 # calculating the direction of the turn
         if direction > 180:
             left_wheel.dc(-speed)
@@ -240,12 +240,12 @@ def run2():
     wheels.straight(650, wait= False)
     gear_box.shift_to(2, False)
     gear_box.wait_for_shift()
-    straight_untill_black(170,left_sensor, False)
-    gear_box.output.run_time(-1000000000, 2000)
+    straight_untill_black(170,left_sensor)
+    gear_box.output.run_time(-1000, 2000)
     wait(500)
-    gear_box.output.run_time(1000000000, 2000)
+    gear_box.output.run_time(1000, 2000)
     wait(1200)
-    wheels.turn(10)
+
     wheels.settings(straight_speed=400)
     wheels.straight(1100)
     while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
@@ -255,29 +255,41 @@ def run2():
 
 def run3():
     smile()
-    wheels.settings(straight_speed=500)
-    wheels.straight(320, wait= False)
-    gear_box.shift_to(4)
-    gear_box.output.run_time(-10000000, 2500)
-    wheels.straight(320, wait= False)
-    gear_box.shift_to(4)
-    gear_box.output.run_time(-10000000, 3000)
-    wheels.straight(200)
-    gear_box.output.run_time(5000, 3000)
-    wheels.straight(-15)
-    wheels.settings(straight_speed=1000 )
-    gear_box.output.run_time(5000, 5000)
-    wheels.straight(-550)
+    hub.imu.reset_heading(0)
+    wheels.reset()
+    wheels.drive(250, -3)
+    gear_box.shift_to(4, False)
+    while wheels.distance() < 320:
+        pass
+    wheels.brake()
+    gear_box.wait_for_shift()
+    gear_box.output.dc(-100)
+    wait(4000)
+    gear_box.output.dc(100)
+    wheels.drive(250, -2)
+    wheels.reset()
+    while wheels.distance() < 320:
+        pass
+    wheels.brake()
+    left_wheel.dc(40)
+    wait(12000)
+    wheels.drive(-400, 3)
+    gear_box.output.stop()
     while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
-        wheels.straight(-550, wait=False)
+        pass
     gear_box.shift_to(1, wait=False)
-    wheels.stop()
+    wheels.brake()
 
 
 def run4(): 
     smile()
+    gear_box.shift_to(1)
     wheels.settings(straight_speed=300)
     wheels.straight(-850)
+    wheels.drive(-400, 40)
+    wait(800)
+    wheels.brake()
+    wait(500)
     while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
         wheels.straight(1050, wait=False)
     wheels.stop()
@@ -288,20 +300,22 @@ def run5():
     gear_box.reset()
     hub.imu.reset_heading(0)
     straight_untill_black(250, left_sensor)
-    follow_line(50, 780,left_sensor, "R" , 1.4)
+    follow_line(50, 720,left_sensor, "R" , 1.4)
     # wheels.straight(50)
     wheels.brake()
-    gyro_abs(-45  ,   45)
+    gyro_abs(-48  ,   45)
 
     # gyro_turn(319, 35, clockwise = True, brake = Stop.HOLD)
-    straight_untill_white(100, right_sensor)
+    straight_untill_white(250, right_sensor)
     wheels.straight(65)
-    gear_box.output.run_time(650,900)
-     
+    gear_box.output.run_time(720,1000)
+
     gyro_abs(0, 45)
     gyro_abs(-40, 45)
+    gear_box.output.run_time(720,1000)
+
     wheels.straight(-150)
-    gyro_abs(-45, 45)
+    gyro_abs(-48, 45)
     gear_box.output.run_time(-700,900)
     gear_box.output.run_time(700,1600)
 
@@ -312,19 +326,47 @@ def run5():
     while not right_sensor.color() == Color(h=49, s=17, v=100):
         pass
     wheels.brake()
-    wheels.straight(35)
-    gyro_abs(42, 45)
-    wheels.straight(-55)
+    wheels.straight(70)
+    gyro_abs(39, 45)
+    wheels.settings(straight_speed=350)
+    wheels.straight(-140)
 
     gear_box.wait_for_shift()
-    gear_box.output.run_time(-720, 5800)
+    gear_box.output.dc(-100)
+    wait(4150) 
+    gear_box.output.hold()
 
     gear_box.shift_to(3)
-    gear_box.output.run_time(-820, 2500)
-    straight_time(700, 1500)
+    gear_box.wait_for_shift()
+    gear_box.output.dc(-100)
+    wait(1100)
+    #gear_box.output.run_time(-820, 1500, wait=False)
+    wheels.drive(480, 6)
+    wait(2000)
+    wheels.stop()
+    gear_box.output.hold()
+
     gear_box.shift_to(4, False)
+
+    wheels.straight(-115)
+    gyro_abs(-48, 45)
     wheels.settings(straight_speed=250)
-    wheels.straight(-2000)
+    wheels.straight(395)
+    wheels.brake()
+    gyro_abs(-60, 45)
+    gear_box.wait_for_shift()
+    gear_box.output.run_time(-320, 3000)
+    gyro_abs(-40, 45)
+    straight_untill_white(150, left_sensor)
+    straight_untill_black(150, left_sensor)
+    gyro_abs(-98, 35)
+    wheels.settings(straight_speed=180)
+    wheels.straight(195)
+
+
+
+
+
 
 
 
