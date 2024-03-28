@@ -168,9 +168,9 @@ def straight_untill_white(speed, sensor: ColorSensor):
         pass
     wheels.brake()
   
-def straight_time(speed, seconds):
+def straight_time(speed, seconds, direction = 1):
     wheels.settings(straight_speed=speed)
-    wheels.straight(1000, wait=False)
+    wheels.straight(1000 * direction, wait=False)
     timer.reset()
     while timer.time() < seconds * 1000: # checking if the time passed
         pass
@@ -236,8 +236,6 @@ def run1():
 
 def run2(): 
     smile()
-    wheels.settings(straight_speed=400)
-    wheels.straight(650, wait= False)
     gear_box.shift_to(2, False)
     gear_box.wait_for_shift()
     straight_untill_black(170,left_sensor)
@@ -245,7 +243,6 @@ def run2():
     wait(500)
     gear_box.output.run_time(1000, 2000)
     wait(1200)
-
     wheels.settings(straight_speed=400)
     wheels.straight(1100)
     while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
@@ -328,12 +325,11 @@ def run5():
     wheels.brake()
     wheels.straight(70)
     gyro_abs(39, 45)
-    wheels.settings(straight_speed=350)
-    wheels.straight(-140)
+    straight_time(350, 1.5, -1)
 
     gear_box.wait_for_shift()
     gear_box.output.dc(-100)
-    wait(4150) 
+    wait(4850) 
     gear_box.output.hold()
 
     gear_box.shift_to(3)
@@ -348,20 +344,19 @@ def run5():
 
     gear_box.shift_to(4, False)
 
-    wheels.straight(-115)
+    wheels.straight(-155)
     gyro_abs(-48, 45)
     wheels.settings(straight_speed=250)
     wheels.straight(395)
     wheels.brake()
-    gyro_abs(-60, 45)
-    gear_box.wait_for_shift()
-    gear_box.output.run_time(-320, 3000)
-    gyro_abs(-40, 45)
-    straight_untill_white(150, left_sensor)
-    straight_untill_black(150, left_sensor)
-    gyro_abs(-98, 35)
-    wheels.settings(straight_speed=180)
-    wheels.straight(195)
+    gyro_abs(-10, 45)
+    wheels.straight(160)
+    # gyro_abs(-40, 45)
+    # straight_untill_white(150, left_sensor)
+    # straight_untill_black(150, left_sensor)
+    # gyro_abs(-98, 35)
+    # wheels.settings(straight_speed=180)
+    # wheels.straight(195)
 
 
 
