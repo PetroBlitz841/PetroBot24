@@ -7,7 +7,7 @@ from pybricks.tools import hub_menu
 
 
 class Gearbox:
-    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=1380):
+    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=15 30):
         """Creates a gear shift using 2 motors."""
         self.shifter = shifter # the shifting motor
         self.output = output # the motor who power the gearbox
@@ -15,7 +15,8 @@ class Gearbox:
         self.gear_distance = gear_distance # the distance between one gear
 
         self.shift_speed = 720 # shifting speed
-        self.stall_threshold = 110 # the load the motor feels at the edge of the gearbox
+        self.stall_threshold = 90 # the load the motor feels at the edge of the gearbox
+        self.current_gear = None
 
     def reset(self):
         self.shifter.dc(-90) # moving the shift gear towards the edge of the gearbox
@@ -24,16 +25,23 @@ class Gearbox:
             # and checking if the motor angle counting says we close to the edge
             pass
         self.shifter.hold()
-        self.shifter.run_angle(self.shift_speed, 400) # fixing the gap created by pushing the edge
         self.shifter.reset_angle(0) 
+        self.shifter.run_angle(self.shift_speed, 40) # fixing the gap created by pushing the edge
+        self.current_gear = 1
+
 
     def shift_to(self, gear: int, wait=True):
         if gear not in range(1, self.gears + 1): # checking if the gear number is valid
             raise ValueError("Invalid gear number")
         
+        factor = 0
+        if gear == 4 and self.current_gear < 4:
+            factor += 450
+        elif self.current_gear == 4 and gear < 4:
+            factor -= 450
         gear = gear - 1 # Change to zero-based index
-        self.shifter.run_target(self.shift_speed, self.gear_distance * gear, wait=wait) 
-        
+        self.shifter.run_target(self.shift_speed, (self.gear_distance * gear) + factor, wait=wait) 
+        self.current_gear = gear + 1
 
     def wait_for_shift(self):
         while not self.shifter.done(): 
@@ -193,18 +201,19 @@ def smile():
 gear_box.reset()
 
 def run1(): 
-    smile() 
+    smile()
+    hub.imu.reset_heading(0) 
     gear_box.shift_to(4, False)
-    wheels.settings(straight_speed=300)
-    wheels.straight(-365, then=Stop.NONE)
-    wheels.settings(straight_speed=100)
-    wheels.straight(-70)
+    wheels.settings(straight_speed=400)
+    wheels.straight(-325, then=Stop.NONE)
+    wheels.settings(straight_speed=80)
+    wheels.straight(-107)
     wheels.settings(turn_rate=35)
     wheels.turn(30, then= Stop.NONE)
-    gyro_turn(160, speed=500, brake= Stop.HOLD) # turning clockwise so the attachment will be in home
+    gyro_turn(160, speed=650, brake= Stop.HOLD) # turning clockwise so the attachment will be in home
     # leaving the attachment
     wheels.straight(-70)
-    wheels.settings(straight_speed=200)
+    wheels.settings(straight_speed=400)
     wheels.straight(70)
     # getting to the black line
     right_wheel.dc(75)
@@ -212,25 +221,28 @@ def run1():
     while right_sensor.reflection() < 95:
         pass
     wheels.straight(30)
-    gear_box.output.run_time(-1000, 1900, wait=False) # moving the gripper to his possition while moving
-    gyro_abs(140, 40) # turning to the line
+    gear_box.output.run_time(-1000, 2200, wait=False) # moving the gripper to his possition while moving
+
+    gyro_abs(140, 55) # turning to the line
     # getting to the M02
-    follow_line_until_black(40, left_sensor, right_sensor, 'L', 0.7)
+    follow_line_until_black(50, left_sensor, right_sensor, 'L', 1.4)
     wheels.stop()
-    gyro_abs(92, 40) 
+    gyro_abs(92, 55) 
     # completing M02
-    straight_time(250, 1.5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    straight_time(180, 1.4)   
     gear_box.output.run_time(1000, 1800) # moving the gripper to secure sam the stage manager
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     #getting home
-    wheels.settings(200)
-    wheels.straight(-100)
+    wheels.settings(250)
+    wheels.straight(-70)
     gear_box.output.run_angle(1000, 360, wait=False) # continue moving the gripper while moving
-    wheels.curve(60, 50, then=Stop.NONE)
+
+    wheels.settings(turn_rate=250)
+    wheels.curve(60, 47, then=Stop.NONE)
     wheels.settings(straight_speed=700)
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
         # allowing us finishing the run without leaving the menu so we can shift gears between runs
         wheels.straight(-1000, wait=False)
-    gear_box.shift_to(2, wait=False) # shifting to gear 2
     wheels.stop()     
 
 
@@ -238,14 +250,17 @@ def run2():
     smile()
     gear_box.shift_to(2, False)
     gear_box.wait_for_shift()
-    straight_untill_black(170,left_sensor)
-    gear_box.output.run_time(-1000, 2000)
+    straight_untill_black(550,left_sensor)
+    gear_box.output.dc(-100)
+    wait(2000)
+    gear_box.output.dc(100)
+    wait(2000)
+    gear_box.output.hold()
     wait(500)
     gear_box.output.run_time(1000, 2000)
     wait(1200)
     wheels.settings(straight_speed=400)
-    wheels.straight(1100)
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
         wheels.straight(1100, wait=False)
     gear_box.shift_to(4, wait=False)
     wheels.stop()  
@@ -254,25 +269,24 @@ def run3():
     smile()
     hub.imu.reset_heading(0)
     wheels.reset()
-    wheels.drive(250, -3)
+    wheels.drive(250, -2)
     gear_box.shift_to(4, False)
     while wheels.distance() < 320:
         pass
     wheels.brake()
     gear_box.wait_for_shift()
     gear_box.output.dc(-100)
-    wait(4000)
+    wait(5500)
     gear_box.output.dc(100)
-    wheels.drive(250, -2)
+    wheels.drive(550, -3.5)
     wheels.reset()
     while wheels.distance() < 320:
         pass
     wheels.brake()
-    left_wheel.dc(40)
-    wait(12000)
-    wheels.drive(-400, 3)
+    wait(10000)
+    wheels.drive(-200, 3)
     gear_box.output.stop()
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
         pass
     gear_box.shift_to(1, wait=False)
     wheels.brake()
@@ -280,14 +294,14 @@ def run3():
 
 def run4(): 
     smile()
-    gear_box.shift_to(1)
-    wheels.settings(straight_speed=300)
-    wheels.straight(-850)
-    wheels.drive(-400, 40)
-    wait(800)
+    gear_box.shift_to(1, False)
+    wheels.settings(straight_speed=350)
+    wheels.straight(-655)
+    wheels.drive(-600, -35)
+    wait(2000)
     wheels.brake()
-    wait(500)
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed():
+    
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
         wheels.straight(1050, wait=False)
     wheels.stop()
 
@@ -296,25 +310,30 @@ def run5():
     smile()
     gear_box.reset()
     hub.imu.reset_heading(0)
-    straight_untill_black(250, left_sensor)
+    straight_untill_black(550, left_sensor)
     follow_line(50, 720,left_sensor, "R" , 1.4)
     # wheels.straight(50)
     wheels.brake()
-    gyro_abs(-48  ,   45)
+    gyro_abs(-48  ,   65)
 
     # gyro_turn(319, 35, clockwise = True, brake = Stop.HOLD)
-    straight_untill_white(250, right_sensor)
+    straight_untill_white(450, right_sensor)
     wheels.straight(65)
-    gear_box.output.run_time(720,1000)
-
-    gyro_abs(0, 45)
-    gyro_abs(-40, 45)
+    gear_box.output.dc(100)
+    wait(1500)
+    gear_box.output.hold()
+    gyro_abs(0, 65)
+    gyro_abs(-40, 65)
     gear_box.output.run_time(720,1000)
 
     wheels.straight(-150)
-    gyro_abs(-48, 45)
-    gear_box.output.run_time(-700,900)
-    gear_box.output.run_time(700,1600)
+    gyro_abs(-48, 65)
+    gear_box.output.dc(-100)
+    wait(900)
+    gear_box.output.hold()
+    gear_box.output.dc(100)
+    wait(1700)
+    gear_box.output.hold()
 
     gear_box.shift_to(2, False)
 
@@ -324,12 +343,12 @@ def run5():
         pass
     wheels.brake()
     wheels.straight(70)
-    gyro_abs(39, 45)
-    straight_time(350, 1.5, -1)
+    gyro_abs(39, 65)
+    straight_time(550, 0.7, -1)
 
     gear_box.wait_for_shift()
     gear_box.output.dc(-100)
-    wait(4850) 
+    wait(7350) 
     gear_box.output.hold()
 
     gear_box.shift_to(3)
@@ -337,20 +356,19 @@ def run5():
     gear_box.output.dc(-100)
     wait(1100)
     #gear_box.output.run_time(-820, 1500, wait=False)
-    wheels.drive(480, 6)
-    wait(2000)
+    wheels.drive(550, 7)
+    wait(1400)
     wheels.stop()
     gear_box.output.hold()
 
-    gear_box.shift_to(4, False)
 
-    wheels.straight(-155)
-    gyro_abs(-48, 45)
-    wheels.settings(straight_speed=250)
+    wheels.straight(-180)
+    gyro_abs(-48, 65)
+    wheels.settings(straight_speed=400)
     wheels.straight(395)
     wheels.brake()
-    gyro_abs(-10, 45)
-    wheels.straight(160)
+    gyro_abs(-5, 55) 
+    wheels.straight(170)
     # gyro_abs(-40, 45)
     # straight_untill_white(150, left_sensor)
     # straight_untill_black(150, left_sensor)
@@ -370,8 +388,11 @@ def run5():
 
 
 def run9(): 
-     print(right_sensor.hsv())
-    #  wheels.drive(300,0)
+    gear_box.shift_to(4, False)
+    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
+        wheels.straight(1050, wait=False)
+    wheels.brake()
+
 
 def tester():
     gear_box.reset()
@@ -399,15 +420,16 @@ def tester():
 # wait(1000)
 # print(right_sensor.reflection())
 # print(left_sensor.reflection())
+        
 while True:
     selected= hub_menu("1","2","3","4","5","9", "T")
-
+    hub.set_stop_button(Button.BLUETOOTH)
     if selected == "1": 
         run1()
     elif selected == "2":
         run2()
     elif selected == "3":
-        run3()
+       run3()
     elif selected == "4":
         run4()
     elif selected == "5":
