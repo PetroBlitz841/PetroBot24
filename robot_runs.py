@@ -20,6 +20,8 @@ left_wheel = Motor(Port.A)  # red
 right_sensor = ColorSensor(Port.D) # aqua
 left_sensor = ColorSensor(Port.C) # magenta
 
+wheels = DriveBase(left_wheel, right_wheel, wheel_diameter=62, axle_track=120)
+
 BLACK = 15
 WHITE = 99
 TARGET = 57
@@ -51,6 +53,7 @@ def until_black(speed, sensor: ColorSensor):
     while sensor.reflection() > 20:
         print(sensor.reflection())
     wheels.brake()
+
 def until_white(speed, sensor: ColorSensor, brake = True):
     wheels.drive(speed, 0)
     while sensor.reflection() < 85:
@@ -106,6 +109,7 @@ def gyro_abs(target, speed):
     wheels.stop()
 
 def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
+    '''turn to an absolute angle based in gyro readings. the funciton is based on pybrick's "turn()" function'''
     target = (target + 360) % 360
     current = (hub.imu.heading()) % 360
     short_way = target - current
@@ -116,7 +120,6 @@ def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
     else:
         wheels.turn(min(short_way, long_way), then=brake)
     print(hub.imu.heading())
-
 
 def straight_untill_black(speed, sensor: ColorSensor):
     wheels.settings(straight_speed=speed)
@@ -132,21 +135,93 @@ def straight_untill_white(speed, sensor: ColorSensor):
         pass
     wheels.brake()
 
-
-def straight_time(speed, seconds, direction=1):
+def straight_time(speed, seconds, direction=1, dist=1000):
     wheels.settings(straight_speed=speed)
-    wheels.straight(1000 * direction, wait=False)
+    wheels.straight(dist * direction, wait=False)
     timer.reset()
     while timer.time() < seconds * 1000:  # checking if the time passed
         pass
     wheels.stop()
 
-
+def get_avrage_dis():
+    return deg_to_mm((left_wheel.angle() + right_wheel.angle()) / 2)
 # ############ runs ###############
 
 
+def run1():
+    
+    wheels.use_gyro(True)
+    wheels.settings(straight_acceleration=200)
+    left_wheel.reset_angle(0)
+    right_wheel.reset_angle(0)
+    wheels.straight(350,wait=False)
+    right_arm.run_angle(1500,-1900 )
+    left_arm.run_angle(800,640,wait= False)
+    right_arm.run_angle(1500,1700 )
+    left_arm.run_angle(800,-630)
+    right_arm.run_angle(1500,-1000)
+    wheels.settings(straight_acceleration=100)
+    wheels.straight(-450,wait=False)
+    right_arm.run_angle(1500,1000 ,wait= False)
+
+def run2():
+    '''shitufit, pick up sam, purpule mission, meuseum, orange man in circle, flower'''
+    if not hub.imu.ready():
+        hub.display.icon(
+            [
+                [100, 0, 0, 0, 100],
+                [0, 100, 0, 100, 0],
+                [0, 0, 100, 0, 0],
+                [0, 100, 0, 100, 0],
+                [100, 0, 0, 0, 100],
+            ]
+        )
+    wheels.use_gyro(True)
+    wheels.settings(straight_acceleration=300)
+    wheels.settings(straight_speed=950)
+    wheels.straight(615) # getting out of home
+    right_wheel.run_angle(250, 97, wait=False) # turning
+    left_wheel.run_angle(speed=250, rotation_angle=-97)
+    straight_time(speed=615, seconds=2.2, dist=980) # getting to meshutefet
+    # left_arm.run_angle(speed=500, rotation_angle=600, wait=False) # picking Sam
+    left_arm.run_time(speed=500, time=1000, wait=False)
+    left_wheel.run_time(speed=300, time=500)
+    wheels.settings(straight_speed=350)
+    wheels.straight(-270)
+    wheels.curve(270, 94) # turning to mufa orot
+    
+    # right_wheel.reset_angle(0)
+    # left_wheel.reset_angle(0)
+    # wheels.drive(speed=300, turn_rate=50)
+    # while get_avrage_dis() < 500:
+    #     pass
+    # wheels.drive(speed=200, turn_rate=50)
+    # while get_avrage_dis() < 200:
+    #     pass
+    # wheels.stop()
+
+    # wheels.straight(1080) 
+    # right_arm.run_time(900, 2200) # puting amir child at mofa orot circle
+    # right_arm.run_time(900, 1400)
+    # right_arm.reset_angle(0)
+    # left_arm.run_time(-900, 2400) # 
+    # right_arm.run_time(-900, 2900, wait=False) # pushing elevator to havaya otefet
+    # wheels.straight(-20)
+    # wheels.straight(710, wait=False)
+    # wait(700)
+    # left_arm.run_angle(900, -3200) # put stuff down in the museum
+    # left_arm.run_angle(900, 3200, wait=False)
+    # wheels.straight(110)
+    # wheels.settings(straight_speed=380)
+    # wheels.straight(100, wait=False)
+    # right_arm.run_time(900, 3800) # do flower thingy
+    # wheels.straight(35)
+    # right_arm.run_time(-900, 2300, wait=False)
+    # wheels.straight(150)
+
+
 def run3():
-    wheels = DriveBase(left_wheel, right_wheel, wheel_diameter=62, axle_track=120)
+    
     wheels.use_gyro(True)
     wheels.settings(straight_acceleration=300)
     left_arm.run_time(-200, 1800, wait=False)
@@ -163,70 +238,8 @@ def run3():
     wait(30000)
 
 
-
-def run1():
-    wheels = DriveBase(left_wheel, right_wheel, wheel_diameter=62, axle_track=120)
-    wheels.use_gyro(True)
-    wheels.settings(straight_acceleration=200)
-    left_wheel.reset_angle(0)
-    right_wheel.reset_angle(0)
-    wheels.straight(350,wait=False)
-    right_arm.run_angle(1500,-1900 )
-    left_arm.run_angle(800,640,wait= False)
-    right_arm.run_angle(1500,1700 )
-    left_arm.run_angle(800,-630)
-    right_arm.run_angle(1500,-1000)
-    wheels.settings(straight_acceleration=100)
-    wheels.straight(-450,wait=False)
-    right_arm.run_angle(1500,1000 ,wait= False)
-
-def run2():
-    
-    # hub.imu.reset_heading(20)
-    # straight_untill_black(600, right_sensor)
-    # gyro_abs(0, 30)
-    # -----------------------------------------------------------
-    wheels = DriveBase(left_wheel, right_wheel, wheel_diameter=62, axle_track=120)
-    wheels.use_gyro(True)
-    wheels.settings(straight_acceleration=300)
-    wheels.settings(straight_speed=950)
-    wheels.straight(615) # getting out of home
-    right_wheel.run_angle(250, 97, wait=False) # turning
-    left_wheel.run_angle(250, -97)
-    wheels.straight(960) # getting to meshutefet
-    left_arm.run_angle(500, 280) # picking sam
-    wheels.straight(-290)
-    wheels.curve(270, 94) # turning to mufa orot
-    wheels.straight(1080) 
-    right_arm.run_time(900, 2200) # puting amir child at mofa orot circle
-    right_arm.run_time(900, 1400)
-    right_arm.reset_angle(0)
-    left_arm.run_time(-900, 2400) # 
-    right_arm.run_time(-900, 2900, wait=False) # pushing elevator to havaya otefet
-    # angle = hub.imu.heading()
-    # while not right_arm.done():
-    #     if hub.imu.heading() > 1+angle:
-    #         # redo the thing
-    #         right_arm.run_target(900, 0)
-    #         wheels.straight(60)
-    #         right_arm.run_time(-900, 2900, wait=False) # pushing elevator to havaya otefet
-    #     angle = hub.imu.heading()
-    #     wait(50)
-    wheels.straight(-20)
-    wheels.straight(710, wait=False)
-    wait(700)
-    left_arm.run_angle(900, -3200) # put stuff down in the museum
-    left_arm.run_angle(900, 3200, wait=False)
-    wheels.straight(110)
-    wheels.settings(straight_speed=380)
-    wheels.straight(100, wait=False)
-    right_arm.run_time(900, 3800) # do flower thingy
-    wheels.straight(35)
-    right_arm.run_time(-900, 2300, wait=False)
-    wheels.straight(150)
-
 def run4():
-    wheels = DriveBase(left_wheel, right_wheel, wheel_diameter=62, axle_track=120)
+    
     wheels.use_gyro(True)
     wheels.settings(straight_acceleration=1000)
     wheels.straight(600,wait=False)
@@ -246,14 +259,15 @@ def run4():
     # right_arm.run_time(900, 1500)
 
 
-
+def run9():
+    wheels.drive(1000, 0)
 
 
 
 
 
 while True:
-    selected = hub_menu("1", "2", "3", "4")
+    selected = hub_menu("1", "2", "3", "4", "9")
     if selected == "1":
         run1()
     elif selected == "2":
@@ -262,4 +276,6 @@ while True:
         run3()
     elif selected == "4":
         run4()
+    elif selected == "9":
+        run9()
 
