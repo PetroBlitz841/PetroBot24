@@ -187,11 +187,23 @@ def run2():
     left_arm.run_time(speed=500, time=1000, wait=False)
     left_wheel.run_time(speed=300, time=500)
     wheels.settings(straight_speed=350)
-    wheels.straight(-270)
-    wheels.curve(270, 94) # turning to mufa orot
-    
-    # right_wheel.reset_angle(0)
-    # left_wheel.reset_angle(0)
+    wheels.straight(-35)
+    # wheels.curve(270, 94) # turning to mufa orot (line from sunday)
+
+    # left_arm.run_time(speed=500, time=1000) # today 
+    # left_wheel.run_time(speed=300, time=500)
+    # wheels.settings(straight_speed=350)
+    # wheels.straight(-400)
+    wheels.curve(320, 90) # turning to mufa orot
+    wheels.straight(1120)
+    right_arm.run_time(900, 2100)
+    wheels.straight(-200, wait=False)
+    right_arm.run_time(-900, 2100)
+    wheels.straight(550, wait=False)
+    left_arm.run_time(-900, 4700)
+    left_arm.run_time(900, 4100, wait=False)
+    wait(350)
+    wheels.straight(450)
     # wheels.drive(speed=300, turn_rate=50)
     # while get_avrage_dis() < 500:
     #     pass
@@ -204,7 +216,6 @@ def run2():
     # right_arm.run_time(900, 2200) # puting amir child at mofa orot circle
     # right_arm.run_time(900, 1400)
     # right_arm.reset_angle(0)
-    # left_arm.run_time(-900, 2400) # 
     # right_arm.run_time(-900, 2900, wait=False) # pushing elevator to havaya otefet
     # wheels.straight(-20)
     # wheels.straight(710, wait=False)
@@ -219,8 +230,15 @@ def run2():
     # right_arm.run_time(-900, 2300, wait=False)
     # wheels.straight(150)
 
-
 def run3():
+    wheels.use_gyro(True)
+    wheels.settings(straight_acceleration=300)
+    straight_time(800, 2, -1)
+    straight_time(800, 10)
+
+
+
+def run4():
     
     wheels.use_gyro(True)
     wheels.settings(straight_acceleration=300)
@@ -238,7 +256,7 @@ def run3():
     wait(30000)
 
 
-def run4():
+def run5():
     
     wheels.use_gyro(True)
     wheels.settings(straight_acceleration=1000)
@@ -265,9 +283,9 @@ def run9():
 
 
 
-
+print(hub.system.reset_reason())
 while True:
-    selected = hub_menu("1", "2", "3", "4", "9")
+    selected = hub_menu("1", "2", "3", "4", "5", "9")
     if selected == "1":
         run1()
     elif selected == "2":
@@ -276,6 +294,9 @@ while True:
         run3()
     elif selected == "4":
         run4()
+    elif selected == "5":
+        run5()
     elif selected == "9":
         run9()
+
 
