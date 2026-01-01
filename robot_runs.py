@@ -3,141 +3,23 @@ from pybricks.pupdevices import Motor, ColorSensor, UltrasonicSensor, ForceSenso
 from pybricks.parameters import Button, Color, Direction, Port, Side, Stop
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, hub_menu
-from pybricks.tools import hub_menu
 
-
-class Gearbox:
-    def __init__(self, shifter: Motor, output: Motor, gears = 4, gear_distance=15 30):
-        """Creates a gear shift using 2 motors."""
-        self.shifter = shifter # the shifting motor
-        self.output = output # the motor who power the gearbox
-        self.gears = gears # the amount of gears in the gearbox
-        self.gear_distance = gear_distance # the distance between one gear
-
-        self.shift_speed = 720 # shifting speed
-        self.stall_threshold = 90 # the load the motor feels at the edge of the gearbox
-        self.current_gear = None
-
-    def reset(self):
-        self.shifter.dc(-90) # moving the shift gear towards the edge of the gearbox
-        while self.shifter.load() < self.stall_threshold or self.shifter.angle() > 100:
-            # checking by the load if we got to the edge of the gearbox
-            # and checking if the motor angle counting says we close to the edge
-            pass
-        self.shifter.hold()
-        self.shifter.reset_angle(0) 
-        self.shifter.run_angle(self.shift_speed, 40) # fixing the gap created by pushing the edge
-        self.current_gear = 1
-
-
-    def shift_to(self, gear: int, wait=True):
-        if gear not in range(1, self.gears + 1): # checking if the gear number is valid
-            raise ValueError("Invalid gear number")
-        
-        factor = 0
-        if gear == 4 and self.current_gear < 4:
-            factor += 450
-        elif self.current_gear == 4 and gear < 4:
-            factor -= 450
-        gear = gear - 1 # Change to zero-based index
-        self.shifter.run_target(self.shift_speed, (self.gear_distance * gear) + factor, wait=wait) 
-        self.current_gear = gear + 1
-
-    def wait_for_shift(self):
-        while not self.shifter.done(): 
-            pass 
-
-############ techniacal stuff ############
 hub = PrimeHub()
-hub.imu.reset_heading(0)
 
-changeM = Motor(Port.B) #blue
-outputM = Motor(Port.D) #purple
-gear_box = Gearbox(changeM, outputM)
+# CUTIE WHEELS
+left_wheel = Motor(Port.A, Direction.COUNTERCLOCKWISE)
+right_wheel = Motor(Port.E, Direction.CLOCKWISE)
 
-left_wheel = Motor(Port.E, positive_direction=Direction.COUNTERCLOCKWISE) #green
-right_wheel = Motor(Port.F) #aqua
-wheels = DriveBase(left_wheel, right_wheel, 62, 129)
-wheels.use_gyro(True)
+left_motor = Motor(Port.B, gears=[20, 28])
+right_motor = Motor(Port.F, gears=[20, 28])
 
-right_sensor = ColorSensor(Port.A) #yellow
-left_sensor = ColorSensor(Port.C) #red
-
-BLACK = 15
-WHITE = 99
-TARGET = 57
-
-WHEEL_DIAMETER = 62.4
-WHEEL_PRIMETER = WHEEL_DIAMETER * 3.14159265358979323846 #20 digits of pi
-COLOR_LIST = [
-    Color.WHITE,
-    Color.BLACK,
-    Color.GREEN,
-    Color.RED,
-    Color.BLUE,
-    Color.YELLOW,
-    Color.VIOLET,
-    Color(h=49, s=17, v=100),
-]
-right_sensor.detectable_colors(COLOR_LIST)
-left_sensor.detectable_colors(COLOR_LIST)
+sensor = ColorSensor(Port.C)
+sensor2 = ColorSensor(Port.D)
+# while sensor2.reflection() > 20:
+#         print(sensor2.reflection())
 
 
-timer = StopWatch()
-
-############# functions ##############
-def deg_to_mm(degrees):
-    return (degrees / 360) * WHEEL_PRIMETER
-
-def until_black(speed, sensor: ColorSensor):
-    wheels.settings(straight_speed=speed)
-    wheels.straight(1000, wait=False)
-    while sensor.reflection() > 20:
-        print(sensor.reflection())
-    wheels.brake()
-def until_white(speed, sensor: ColorSensor, brake = True):
-    wheels.drive(speed, 0)
-    while sensor.reflection() < 85:
-        print(sensor.reflection())
-    if brake:
-        wheels.stop()
-
-def follow_line(speed, distance, sensor: ColorSensor, side, kp):
-    if side == "R": 
-        direction = 1
-    else: 
-        direction = -1 # changing which wheel will add or subtruct the change
-    left_wheel.reset_angle() # reseting wheel angle for counting the distance we crossed
-    while deg_to_mm(left_wheel.angle()) < distance: # converting the angle of the wheel to mm and checking if we crossed the distance
-        change = (TARGET - sensor.reflection()) * kp * direction # calculating the change needed to add or subtruct from the wheels
-        left_wheel.dc(speed + change)
-        right_wheel.dc(speed - change)
-
-def follow_line_until_black(speed, detect_sensor: ColorSensor, follow_sensor: ColorSensor, side, kp, brake = True):
-    if side == "R":
-        direction = 1
-    else:
-        direction = -1
-    while detect_sensor.reflection() > 25:
-        change = (TARGET - follow_sensor.reflection()) * kp * direction
-        left_wheel.dc(speed + change)
-        right_wheel.dc(speed - change)
-    if brake:
-        wheels.stop()
-
-def follow_line_time(speed, seconds, sensor: ColorSensor, side, kp, brake):
-    if side == "R":
-        direction = 1
-    else:
-        direction = -1
-    timer.reset()
-    while timer.time() * 1000 < seconds:
-        change = (TARGET - sensor.reflection()) * kp * direction
-        left_wheel.dc(speed + change)
-        right_wheel.dc(speed - change)
-    if brake:
-        wheels.stop()
-
+cutie = DriveBase(left_wheel, right_wheel, 62.4, 80)
 def gyro_abs(target, speed):
     while not (target > hub.imu.heading() - 0.01) or not (target < hub.imu.heading() + 0.01): # the stoping range
         direction = (target - (hub.imu.heading() % 360)) % 360 # calculating the direction of the turn
@@ -147,294 +29,244 @@ def gyro_abs(target, speed):
         else:
             left_wheel.dc(speed)
             right_wheel.dc(-speed)
-    wheels.stop()
+    cutie.stop()
 
-def gyro_turn(target, speed, clockwise = True, brake = Stop.HOLD):
-    target = (target + 360) % 360
-    current = (hub.imu.heading()) % 360
-    short_way = target - current
-    long_way = (360 - abs(short_way)) * (-1 * short_way / abs(short_way))
-    wheels.settings(turn_rate=speed, turn_acceleration=30)
-    if clockwise:
-        wheels.turn(max(short_way, long_way), then=brake)
-    else:
-        wheels.turn(min(short_way, long_way), then=brake)
+color_list = [
+    Color(343, 82, 36),  # red
+    Color(216, 88, 27),  # blue
+    Color(156, 72, 19),  # green
+    Color(51, 75, 71),  # yellow
+]
+run_colors = (Color.BLUE, Color.GREEN, Color.RED)
+sensor2.detectable_colors(color_list)
+
+cutie.use_gyro(True)
+# while("1 + 1 = 3"):
+#     print(sensor2.hsv())
+# functions
+# def GetOut():
+#     cutie.drive(-50, 0)
+
+#     while sensor.color() != Color.MAGENTA:
+#         print(sensor.color())
+#         print(sensor.hsv())
+#         pass
+
+#     cutie.stop()
+
+# right_motor.run_time(5000, 5000, wait=False)
+def straight_time(speed, time):
+    timer = StopWatch()
+    last = cutie.settings()[0]
+    cutie.settings(speed)
+
+    while timer.time() < time:
+        if speed > 0:
+            cutie.straight(1000, wait=False)
+        else:
+            cutie.straight(-1000, wait=False)
+    cutie.stop()
+
+    cutie.settings(last)
+
+
+def till_black(speed, turn_rate):
+    cutie.drive(speed, turn_rate)
+
+    while sensor2.reflection() > 7:
+        print(sensor2.reflection())
+        pass
+
+    cutie.stop()
+
+
+# def abs_turn(target):
+#     distance = target - cutie.angle()
+
+#     cutie.turn(turnDeg)
+
+# def turn_to(angle):
+#     print(hub.imu.heading())
+#     start_angle = (hub.imu.heading() + 360) % 360  # 208
+#     print(start_angle)
+#     deg_to_turn = (angle - start_angle) % 360  # 242
+#     print(deg_to_turn)
+
+#     if deg_to_turn >= 180:
+#         chassis.turn(deg_to_turn - 360)
+#     else:
+#         chassis.turn(deg_to_turn)
+
+# def turn_to_angle(angle, speed=200, max_time=3):
+#     """Turns to a specified absolute gyro angle"""
+
+#     timer = StopWatch()
+#     timer.reset()
+
+#     distance = angle - hub.imu.heading()
+#     robot_acceleration = wheels.settings()[3]
+#     wheels.settings(turn_rate=speed)
+#     wheels.turn(distance)
+
+#     # while (timer.time()) < (max_time * 1000) and angle - hub.imu.heading() > 1:
+#     #     ...
+#     wheels.settings(turn_rate=robot_acceleration)
+
+
+def is_color_in_range(measured_color: Color, comparison_color: Color, range: int):
+    h = comparison_color.h - range <= measured_color.h <= comparison_color.h + range
+    s = comparison_color.s - range <= measured_color.s <= comparison_color.s + range
+    v = comparison_color.v - range <= measured_color.v <= comparison_color.v + range
+
+    return h & s & v
+
+def turn_to(angle, then=Stop.HOLD):
     print(hub.imu.heading())
+    start_angle = (hub.imu.heading() + 360) % 360  # 208
+    print(start_angle)
+    deg_to_turn = (angle - start_angle) % 360  # 242
+    print(deg_to_turn)
+    if then == Stop.NONE:
+        if deg_to_turn >= 180:
+            cutie.turn(deg_to_turn - 360)
+        else:
+            cutie.turn(deg_to_turn)
+        return
+    if deg_to_turn >= 180:
+        cutie.turn(deg_to_turn - 360)
+    else:
+        cutie.turn(deg_to_turn)
+# cutie.settings(turn_rate=40)
+# cutie.turn(360)
+# # turn_to(90)
+# # hub.imu.reset_heading(0)
+# # wait(50)
+# gyro_abs(57, 40)
+# gyro_abs(0, 40)
+
+def GetOut():
+    cutie.drive(-50, 0)
+
+    # while not is_color_in_range(sensor2.color, yellow, 10):
+    while sensor2.color != Color(52, 75, 77):
+        # print(sensor2.hsv())
+        print(sensor2.hsv())
+        pass
+
+    left_wheel.hold()
+    right_motor.hold()
+
+# left_motor.run_time(1000, 5000, wait = False)
+# cutie.straight(50)
+# left_motor.run_time(100, 5000, wait=False)
+# cutie.turn(120)
+# cutie.curve(radius=600, angle=-30)
+# cutie.straight(150)
+# # right_motor.run_time(300, 3000)
+# left_motor.run_time(-5000, 5000)
+# left_motor.run_time(5000, 5000)
+
+
+
+
+
+# cutie.straight(-3000)
+# wait(5000)
+# cutie.straight(200)
+# cutie.straight(-2000)
+# # GetOut()
+# till_black(100, 0)
+# right_motor.run_time(300, 5000)
+# left_motor.run_time(-300, 5000)
+    # right_motor.run_time(300, 5000)
+def run1():
+    # cutie.settings(700)
+    # cutie.straight(1300)
+    # straight_time(300, 4000)
+    # wait(2000)
+    cutie.settings(150, turn_rate= 40)
+    # cutie.use_gyro(True)
+    cutie.straight(-500)
+    cutie.curve(-500, -20)
+    turn_to(0)
+    cutie.straight(-550)
+    left_motor.run_time(300, 5000, wait=False)
+    cutie.use_gyro(False)
+    cutie.turn(90)
+    cutie.straight(-300)
+    cutie.use_gyro(True)
+    cutie.settings(turn_rate=70, straight_speed= 60)
+    cutie.straight(110)
+    cutie.turn(-90)
+    left_motor.run_time(-1000, 300, wait=False)
+    cutie.straight(180)
+    left_motor.run_angle(-160, 500)
+    left_motor.run_angle(160, 270)
+    cutie.straight(-300)
     
 
-def straight_untill_black(speed, sensor: ColorSensor):
-    wheels.settings(straight_speed=speed)
-    wheels.straight(1000, wait=False)
-    while sensor.reflection() > 20: # checking if the sensor see black
-        pass
-    wheels.brake()
-
-def straight_untill_white(speed, sensor: ColorSensor):
-    wheels.settings(straight_speed=speed)
-    wheels.straight(1000, wait=False)
-    while sensor.reflection() < 95: # checking if the sensor see black
-        pass
-    wheels.brake()
-  
-def straight_time(speed, seconds, direction = 1):
-    wheels.settings(straight_speed=speed)
-    wheels.straight(1000 * direction, wait=False)
-    timer.reset()
-    while timer.time() < seconds * 1000: # checking if the time passed
-        pass
-    wheels.stop()
-
-############ fun functions ######
-    
-def smile():
-    hub.display.icon(
-        [
-            [0, 100, 0, 100, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [100, 0, 0, 0, 100],
-            [0, 100, 100, 100, 0]
-        ]
-    )
-
-############ runs ###############
-gear_box.reset()
-
-def run1(): 
-    smile()
-    hub.imu.reset_heading(0) 
-    gear_box.shift_to(4, False)
-    wheels.settings(straight_speed=400)
-    wheels.straight(-325, then=Stop.NONE)
-    wheels.settings(straight_speed=80)
-    wheels.straight(-107)
-    wheels.settings(turn_rate=35)
-    wheels.turn(30, then= Stop.NONE)
-    gyro_turn(160, speed=650, brake= Stop.HOLD) # turning clockwise so the attachment will be in home
-    # leaving the attachment
-    wheels.straight(-70)
-    wheels.settings(straight_speed=400)
-    wheels.straight(70)
-    # getting to the black line
-    right_wheel.dc(75)
-    left_wheel.dc(15)
-    while right_sensor.reflection() < 95:
-        pass
-    wheels.straight(30)
-    gear_box.output.run_time(-1000, 2200, wait=False) # moving the gripper to his possition while moving
-
-    gyro_abs(140, 55) # turning to the line
-    # getting to the M02
-    follow_line_until_black(50, left_sensor, right_sensor, 'L', 1.4)
-    wheels.stop()
-    gyro_abs(92, 55) 
-    # completing M02
-    straight_time(180, 1.4)   
-    gear_box.output.run_time(1000, 1800) # moving the gripper to secure sam the stage manager
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-    #getting home
-    wheels.settings(250)
-    wheels.straight(-70)
-    gear_box.output.run_angle(1000, 360, wait=False) # continue moving the gripper while moving
-
-    wheels.settings(turn_rate=250)
-    wheels.curve(60, 47, then=Stop.NONE)
-    wheels.settings(straight_speed=700)
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
-        # allowing us finishing the run without leaving the menu so we can shift gears between runs
-        wheels.straight(-1000, wait=False)
-    wheels.stop()     
 
 
-def run2(): 
-    smile()
-    gear_box.shift_to(2, False)
-    gear_box.wait_for_shift()
-    straight_untill_black(550,left_sensor)
-    gear_box.output.dc(-100)
-    wait(2000)
-    gear_box.output.dc(100)
-    wait(2000)
-    gear_box.output.hold()
-    wait(500)
-    gear_box.output.run_time(1000, 2000)
-    wait(1200)
-    wheels.settings(straight_speed=400)
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
-        wheels.straight(1100, wait=False)
-    gear_box.shift_to(4, wait=False)
-    wheels.stop()  
+def run2():
+    cutie.use_gyro(True)
+    cutie.settings(80)
+    for i in range(4):
+        right_motor.run_time(-100,500)
+        right_motor.run_time(100,500)
+
+
+
+
 
 def run3():
-    smile()
-    hub.imu.reset_heading(0)
-    wheels.reset()
-    wheels.drive(250, -2)
-    gear_box.shift_to(4, False)
-    while wheels.distance() < 320:
-        pass
-    wheels.brake()
-    gear_box.wait_for_shift()
-    gear_box.output.dc(-100)
-    wait(5500)
-    gear_box.output.dc(100)
-    wheels.drive(550, -3.5)
-    wheels.reset()
-    while wheels.distance() < 320:
-        pass
-    wheels.brake()
-    wait(10000)
-    wheels.drive(-200, 3)
-    gear_box.output.stop()
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
-        pass
-    gear_box.shift_to(1, wait=False)
-    wheels.brake()
+    cutie.straight(700)
+    till_black(100, 0)
+    gyro_abs(45, 40)
+    cutie.straight(300)
+    right_motor.run_time(-5000, 1000)
+    left_motor.run_angle(90, 1000)
+    cutie.straight(-300)
+    cutie.turn(33)
+    cutie.straight(200)
 
 
-def run4(): 
-    smile()
-    gear_box.shift_to(1, False)
-    wheels.settings(straight_speed=350)
-    wheels.straight(-655)
-    wheels.drive(-600, -35)
-    wait(2000)
-    wheels.brake()
-    
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
-        wheels.straight(1050, wait=False)
-    wheels.stop()
+# left_motor.run_time(-5000, 3000)
+
+# cutie.settings(50)
+# cutie.straight(-2000)
 
 
-def run5(): 
-    smile()
-    gear_box.reset()
-    hub.imu.reset_heading(0)
-    straight_untill_black(550, left_sensor)
-    follow_line(50, 720,left_sensor, "R" , 1.4)
-    # wheels.straight(50)
-    wheels.brake()
-    gyro_abs(-48  ,   65)
-
-    # gyro_turn(319, 35, clockwise = True, brake = Stop.HOLD)
-    straight_untill_white(450, right_sensor)
-    wheels.straight(65)
-    gear_box.output.dc(100)
-    wait(1500)
-    gear_box.output.hold()
-    gyro_abs(0, 65)
-    gyro_abs(-40, 65)
-    gear_box.output.run_time(720,1000)
-
-    wheels.straight(-150)
-    gyro_abs(-48, 65)
-    gear_box.output.dc(-100)
-    wait(900)
-    gear_box.output.hold()
-    gear_box.output.dc(100)
-    wait(1700)
-    gear_box.output.hold()
-
-    gear_box.shift_to(2, False)
-
-    wheels.straight(200)
-    wheels.straight(1000, wait=False)
-    while not right_sensor.color() == Color(h=49, s=17, v=100):
-        pass
-    wheels.brake()
-    wheels.straight(70)
-    gyro_abs(39, 65)
-    straight_time(550, 0.7, -1)
-
-    gear_box.wait_for_shift()
-    gear_box.output.dc(-100)
-    wait(7350) 
-    gear_box.output.hold()
-
-    gear_box.shift_to(3)
-    gear_box.wait_for_shift()
-    gear_box.output.dc(-100)
-    wait(1100)
-    #gear_box.output.run_time(-820, 1500, wait=False)
-    wheels.drive(550, 7)
-    wait(1400)
-    wheels.stop()
-    gear_box.output.hold()
+# GetOut()
+def cycle(iterable):
+    iterator = iter(iterable)
+    while True:
+        try:
+            yield next(iterator)
+        except StopIteration:
+            iterator = iter(iterable)
 
 
-    wheels.straight(-180)
-    gyro_abs(-48, 65)
-    wheels.settings(straight_speed=400)
-    wheels.straight(395)
-    wheels.brake()
-    gyro_abs(-5, 55) 
-    wheels.straight(170)
-    # gyro_abs(-40, 45)
-    # straight_untill_white(150, left_sensor)
-    # straight_untill_black(150, left_sensor)
-    # gyro_abs(-98, 35)
-    # wheels.settings(straight_speed=180)
-    # wheels.straight(195)
+sensor.detectable_colors(run_colors)
+color_cycle = cycle(run_colors)
+color_map = {
+    Color.RED: "1",
+    Color.BLUE: "2",
+    Color.GREEN: "3",
+}
+
+while sensor.color() != next(color_cycle):
+    pass
+
+menu = [color_map[sensor.color()]]
+for i in range(len(run_colors) - 1):
+    menu.append(color_map[next(color_cycle)])
 
 
+selected = hub_menu(*menu)
 
-
-
-
-
-
-
-
-
-
-def run9(): 
-    gear_box.shift_to(4, False)
-    while Button.LEFT not in hub.buttons.pressed() and Button.RIGHT not in hub.buttons.pressed()and Button.CENTER not in hub.buttons.pressed():
-        wheels.straight(1050, wait=False)
-    wheels.brake()
-
-
-def tester():
-    gear_box.reset()
-    while Button.LEFT not in hub.buttons.pressed():
-        gear = hub_menu("1", "2", "3", "4") if hub != 3 else 2.5
-        gear_box.shift_to(int(gear))
-        gear_box.output.dc(-100)
-        while Button.RIGHT not in hub.buttons.pressed():
-            pass
-        gear_box.output.hold()
-        gear_box.reset()
-
-    
-
-
-
-
-# wheels.settings(straight_speed=200)
-# wheels.straight(30000)
-
-
-# right_wheel.run_time(500, 1000)
-# left_wheel.run_time(500, 1000)
-# wheels.drive(500, 0)
-# wait(1000)
-# print(right_sensor.reflection())
-# print(left_sensor.reflection())
-        
-while True:
-    selected= hub_menu("1","2","3","4","5","9", "T")
-    hub.set_stop_button(Button.BLUETOOTH)
-    if selected == "1": 
-        run1()
-    elif selected == "2":
-        run2()
-    elif selected == "3":
-       run3()
-    elif selected == "4":
-        run4()
-    elif selected == "5":
-        run5()
-    elif selected == "9":
-        run9() 
-    elif selected == "T":
-        tester()
+if selected == "1":
+    run1()
+elif selected == "2":
+    run2()
+elif selected == "3":
+    run3()
